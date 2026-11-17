@@ -28,6 +28,12 @@
 #include <string.h>
 #endif
 
+#include <gdk/gdk.h>
+
+#ifdef GDK_WINDOWING_WAYLAND
+#include <gdk/gdkwayland.h>
+#endif
+
 #include "thunar/thunar-abstract-dialog.h"
 #include "thunar/thunar-action-manager.h"
 #include "thunar/thunar-application.h"
@@ -1937,6 +1943,12 @@ thunar_show_renamer_dialog (gpointer     parent,
   application = thunar_application_get ();
   thunar_application_take_window (application, GTK_WINDOW (dialog));
   g_object_unref (G_OBJECT (application));
+
+  #ifdef GDK_WINDOWING_WAYLAND
+    if (standalone && window == NULL
+        && GDK_IS_WAYLAND_DISPLAY (gtk_widget_get_display (dialog)))
+      gtk_window_set_type_hint (GTK_WINDOW (dialog), GDK_WINDOW_TYPE_HINT_NORMAL);
+  #endif
 
   /* display the dialog */
   gtk_widget_show (dialog);

@@ -43,6 +43,10 @@
 #include <libxfce4kbd-private/xfce-shortcuts-editor.h>
 #include <libxfce4ui/libxfce4ui.h>
 
+#ifdef GDK_WINDOWING_WAYLAND
+#include <gdk/gdkwayland.h>
+#endif
+
 
 
 static void
@@ -1533,6 +1537,18 @@ thunar_preferences_dialog_new (GtkWindow *parent)
   GdkScreen   *screen;
 
   dialog = g_object_new (THUNAR_TYPE_PREFERENCES_DIALOG, NULL);
+
+#ifdef GDK_WINDOWING_WAYLAND
+  if (parent == NULL
+      && GDK_IS_WAYLAND_DISPLAY (gtk_widget_get_display (dialog)))
+    gtk_window_set_type_hint (GTK_WINDOW (dialog), GDK_WINDOW_TYPE_HINT_NORMAL);
+
+  if (parent != NULL && GDK_IS_WAYLAND_DISPLAY (gtk_widget_get_display (GTK_WIDGET (parent))))
+    {
+      gtk_window_set_transient_for (GTK_WINDOW (dialog), parent);
+      return dialog;
+    }
+#endif
 
   /* fake gtk_window_set_transient_for() for centering the window on
    * the parent window. See bug #3586. */
